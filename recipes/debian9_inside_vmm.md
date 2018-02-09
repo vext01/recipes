@@ -85,6 +85,9 @@ pass in proto udp from 100.64.0.0/10 to any port domain \
      rdr-to $vm_dns port domain
 ```
 
+Change `vm_ext` and `vm_dns` to: an interface through which to grant the VM
+internet access, and a valid DNS server respectively.
+
 Don't forget that the order of `pf(4)` rules matters!
 
 Apply the new rules:
@@ -92,9 +95,6 @@ Apply the new rules:
 ```
 # pfctl -f /etc/pf.conf`
 ```
-
-Change `vm_ext` and `vm_dns` to: an interface through which to grant the VM
-internet access, and a valid DNS server respectively.
 
 Then enable ipv4 (or ipv6, if you need it) forwarding:
 
