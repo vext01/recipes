@@ -1,18 +1,20 @@
-# Running Debian 9 inside OpenBSD `vmm(4)`
+# Running Debian 9 inside OpenBSD vmm(4)
 
 At the time of writing, `vmm(4)` does not emulate CDROM after initial boot.
-This means you cannot install Debian directly under vmm(4).
+This means you cannot install Debian directly under `vmm(4)`.
 
 We can work around this by doing the initial install under qemu.
 
 
 ## Process
 
-### Make a disk image with `vmctl(8)`.
+### Make a disk image with vmctl(8).
 
 ```
-$ vmctl create deb9.img -s 5G
+$ vmctl create deb9.img -s 50G
 ```
+
+(Makes a 50 Gigabyte disk image)
 
 ### Boot the Debian install CD under qemu with the disk image attached.
 
@@ -34,10 +36,10 @@ $ qemu-system-x86_64 -hda deb9.img -m 3G -net nic -net user
 
 ### Change the console to the serial line.
 
-At the time of writing, vmm(4) doesn't do VGA emulation, so we have to use the
+At the time of writing, `vmm(4)` doesn't do VGA emulation, so we have to use the
 serial line as a console.
 
-Login in and edit `/etc/default/grub`, adding the following `console=ttyS0` to
+Login and edit `/etc/default/grub`. Add `console=ttyS0` to
 `GRUB_CMDLINE_LINUX_DEFAULT`. You should then have a line like:
 
 ```
@@ -60,7 +62,7 @@ $ doas vmctl start deb9 -d deb9.img -i 1 -L -m 3G -c
 
 ### Update the networking configuration.
 
-vmm(4) emulates a different kind of network device to qemu, so we have to
+`vmm(4)` emulates a different kind of network device to qemu, so we have to
 change the config.
 
 Edit `/etc/networks/interfaces` and replace all instances of `ens3` with
@@ -73,6 +75,8 @@ iface enp0s3 inet dhcp<Paste>
 ```
 
 ### Grant the VM network access.
+
+We can use firewall rules to grant the VM access to the internet.
 
 On the OpenBSD host, edit `/etc/pf.conf` and add a lines like this:
 
@@ -87,6 +91,10 @@ pass in proto udp from 100.64.0.0/10 to any port domain \
 
 Change `vm_ext` and `vm_dns` to: an interface through which to grant the VM
 internet access, and a valid DNS server respectively.
+
+The parentheses around `$vm_ext` causes the NAT rule to lazily look up the
+address of the interface. This is useful on (e.g.) a laptop, where the IP of
+(in this case) `iwm0` may change as you move networks.
 
 Don't forget that the order of `pf(4)` rules matters!
 
