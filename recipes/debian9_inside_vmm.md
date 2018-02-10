@@ -101,7 +101,7 @@ Don't forget that the order of `pf(4)` rules matters!
 Apply the new rules:
 
 ```
-# pfctl -f /etc/pf.conf`
+# pfctl -f /etc/pf.conf
 ```
 
 Then enable ipv4 (or ipv6, if you need it) forwarding:
